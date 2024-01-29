@@ -74,7 +74,7 @@ Here we load the data, clean the variable names, create a new variable made up o
 #| warning: false
 
 # Load asycuda data ----
-asycuda <- read_xls(here("input", "raw data", "ASYCUDA", "import fresh.xls")) %>% 
+asycuda <- read_xls(here("00_raw_data", "ASYCUDA", "import fresh.xls")) %>% 
   clean_names() %>% 
   # Rename "tariff_code" to "hs_code" etc.
   rename(hs_code = tariff_code,
@@ -120,7 +120,7 @@ After a quick search on the internet an MS Excel spreadsheet was found and downl
 #| label: import-hs-codes
 
 # Load HS codes ----
-hs_codes <- read_delim(here("input", "raw data", "ASYCUDA", "hs_codes_list.csv"), 
+hs_codes <- read_delim(here("00_raw_data", "ASYCUDA", "hs_codes_list.csv"), 
                        delim = ";", escape_double = FALSE, trim_ws = TRUE)
 ```
 
