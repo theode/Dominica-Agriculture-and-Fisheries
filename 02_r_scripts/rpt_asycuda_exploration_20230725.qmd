@@ -64,7 +64,7 @@ options(scipen = 5, digits = 2)
 
 ## Data used
 
-The data used for this exercise was obtained from ASYCUDA databases. It shows commodities imported to Dominica over the period July 2022 to June 2023. The data can be found on my Dropbox here: <https://www.dropbox.com/scl/fi/co4z5zy7yfeh893g0ninp/import-fresh.xls?rlkey=pmqaqmfrwrep1fzbx597wsd3n&dl=0>. 
+The data used for this exercise was obtained from ASYCUDA databases. It shows commodities imported to Dominica over the period July 2022 to June 2023. The data can be found on my GitHub here: <https://github.com/theode/Dominica-Agriculture-and-Fisheries/blob/main/00_raw_data/ASYCUDA/import%20fresh.xls>. 
 
 Here we load the data, clean the variable names, create a new variable made up of the first four characters of the "hs_code" variable, and lastly set certain variables as factors and reorder the variables:
 
@@ -114,7 +114,7 @@ kable(head(asycuda))
 
 In exploring the "asycuda" data, it was observed that the description had over 100 unique values and many with similar names. Additionally, the variable has category and sub-category values within. This causes some of the issue with ambiguity. It was decided to import an HS Code dictionary to address the issue and get higher level categories for use instead of the commodity description.
 
-After a quick search on the internet an MS Excel spreadsheet was found and downloaded. However, the structure was not very useful as multiple lines of data were included within a single row. Cleaning the entire spreadsheet was time consuming, so only the rows containing the codes necessary were cleaned and saved as a CSV file (find this here: <https://www.dropbox.com/scl/fi/mjwl34493bla9t4rhgsjj/hs_codes_list.csv?rlkey=826udzwb2nbsk15cpw27sns1t&dl=0>), using a semi-colon delimiter between variables. The data is loaded here:
+After a quick search on the internet an MS Excel spreadsheet was found and downloaded. However, the structure was not very useful as multiple lines of data were included within a single row. Cleaning the entire spreadsheet was time consuming, so only the rows containing the codes necessary were cleaned and saved as a CSV file (find this here: <https://github.com/theode/Dominica-Agriculture-and-Fisheries/blob/main/00_raw_data/ASYCUDA/hs_codes_list.csv>), using a semi-colon delimiter between variables. The data is loaded here:
 
 ```{r}
 #| label: import-hs-codes
