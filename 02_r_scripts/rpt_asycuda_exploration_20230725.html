@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Derrick Theophille">
-<meta name="dcterms.date" content="2023-07-31">
+<meta name="dcterms.date" content="2024-01-29">
 
 <title>ASYCUDA Data: Fresh Produce Imports 2022-2023</title>
 <style>
@@ -123,7 +123,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">July 31, 2023</p>
+      <p class="date">January 29, 2024</p>
     </div>
   </div>
   
@@ -159,7 +159,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="data-used" class="level2" data-number="2.2">
 <h2 data-number="2.2" class="anchored" data-anchor-id="data-used"><span class="header-section-number">2.2</span> Data used</h2>
-<p>The data used for this exercise was obtained from ASYCUDA databases. It shows commodities imported to Dominica over the period July 2022 to June 2023. The data can be found on my Dropbox here: <a href="https://www.dropbox.com/scl/fi/co4z5zy7yfeh893g0ninp/import-fresh.xls?rlkey=pmqaqmfrwrep1fzbx597wsd3n&amp;dl=0" class="uri">https://www.dropbox.com/scl/fi/co4z5zy7yfeh893g0ninp/import-fresh.xls?rlkey=pmqaqmfrwrep1fzbx597wsd3n&amp;dl=0</a>.</p>
+<p>The data used for this exercise was obtained from ASYCUDA databases. It shows commodities imported to Dominica over the period July 2022 to June 2023. The data can be found on my GitHub here: <a href="https://github.com/theode/Dominica-Agriculture-and-Fisheries/blob/main/00_raw_data/ASYCUDA/import%20fresh.xls" class="uri">https://github.com/theode/Dominica-Agriculture-and-Fisheries/blob/main/00_raw_data/ASYCUDA/import%20fresh.xls</a>.</p>
 <p>Here we load the data, clean the variable names, create a new variable made up of the first four characters of the “hs_code” variable, and lastly set certain variables as factors and reorder the variables:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load asycuda data ----</span></span>
@@ -294,7 +294,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>In exploring the “asycuda” data, it was observed that the description had over 100 unique values and many with similar names. Additionally, the variable has category and sub-category values within. This causes some of the issue with ambiguity. It was decided to import an HS Code dictionary to address the issue and get higher level categories for use instead of the commodity description.</p>
-<p>After a quick search on the internet an MS Excel spreadsheet was found and downloaded. However, the structure was not very useful as multiple lines of data were included within a single row. Cleaning the entire spreadsheet was time consuming, so only the rows containing the codes necessary were cleaned and saved as a CSV file (find this here: <a href="https://www.dropbox.com/scl/fi/mjwl34493bla9t4rhgsjj/hs_codes_list.csv?rlkey=826udzwb2nbsk15cpw27sns1t&amp;dl=0" class="uri">https://www.dropbox.com/scl/fi/mjwl34493bla9t4rhgsjj/hs_codes_list.csv?rlkey=826udzwb2nbsk15cpw27sns1t&amp;dl=0</a>), using a semi-colon delimiter between variables. The data is loaded here:</p>
+<p>After a quick search on the internet an MS Excel spreadsheet was found and downloaded. However, the structure was not very useful as multiple lines of data were included within a single row. Cleaning the entire spreadsheet was time consuming, so only the rows containing the codes necessary were cleaned and saved as a CSV file (find this here: <a href="https://github.com/theode/Dominica-Agriculture-and-Fisheries/blob/main/00_raw_data/ASYCUDA/hs_codes_list.csv" class="uri">https://github.com/theode/Dominica-Agriculture-and-Fisheries/blob/main/00_raw_data/ASYCUDA/hs_codes_list.csv</a>), using a semi-colon delimiter between variables. The data is loaded here:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load HS codes ----</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>hs_codes <span class="ot">&lt;-</span> <span class="fu">read_delim</span>(<span class="fu">here</span>(<span class="st">"00_raw_data"</span>, <span class="st">"ASYCUDA"</span>, <span class="st">"hs_codes_list.csv"</span>), </span>
@@ -307,8 +307,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
 <colgroup>
-<col style="width: 13%">
-<col style="width: 86%">
+<col style="width: 6%">
+<col style="width: 93%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -318,24 +318,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">0502</td>
-<td style="text-align: left;">Pigs, hogs or boars bristles and hair and waste thereof</td>
+<td style="text-align: left;">0901</td>
+<td style="text-align: left;">Coffee, whether or not roasted or decaffeinated husks and skins coffee substitutes containing coffee in any</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">0603</td>
-<td style="text-align: left;">Flowers cut flowers and flower buds of a kind suitable for bouquets or for ornamental purposes, fresh, drie</td>
+<td style="text-align: left;">1002</td>
+<td style="text-align: left;">Rye</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">0711</td>
-<td style="text-align: left;">Vegetables provisionally preserved (eg by sulphur dioxide gas, in brine, in sulphur water or in other preserv</td>
+<td style="text-align: left;">0308</td>
+<td style="text-align: left;">Aquatic invertebrates other than crustceans and molluscs live, fresh, chilled, frozen, dried salted, or in brine. Smoked invertebrates other than crustceans and molluscs before, during or after the smoking process. Fit for human consumption.</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">0805</td>
-<td style="text-align: left;">Citrus fruit fresh or dried</td>
+<td style="text-align: left;">0501</td>
+<td style="text-align: left;">Human hair unworked, whether or not washed or scoured waste of human hair</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">0208</td>
-<td style="text-align: left;">Meat and edible meat offal, n.e.s. in chapter 2 fresh, chilled or frozen</td>
+<td style="text-align: left;">0401</td>
+<td style="text-align: left;">Milk and cream not concentrated nor containing added sugar or other sweetening matter</td>
 </tr>
 </tbody>
 </table>
@@ -384,8 +384,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <col style="width: 6%">
 <col style="width: 3%">
 <col style="width: 5%">
-<col style="width: 39%">
-<col style="width: 27%">
+<col style="width: 38%">
+<col style="width: 28%">
 <col style="width: 8%">
 <col style="width: 3%">
 <col style="width: 4%">
@@ -404,54 +404,54 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">0905</td>
-<td style="text-align: left;">0905100000</td>
-<td style="text-align: left;">Spices</td>
-<td style="text-align: left;">Vanilla</td>
-<td style="text-align: left;">Neither crushed nor ground</td>
-<td style="text-align: left;">United States of America</td>
-<td style="text-align: right;">25</td>
-<td style="text-align: right;">103</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">0306</td>
-<td style="text-align: left;">0306110000</td>
-<td style="text-align: left;">Fish</td>
-<td style="text-align: left;">Crustaceans, in shell or not, live, fresh, chilled, frozen, dried, salted or in brine crustaceans, in shell, cooked</td>
-<td style="text-align: left;">Rock lobster and other sea crawfish (Palinurus spp., Panulirus spp., Jasus spp.)</td>
-<td style="text-align: left;">Guadeloupe</td>
-<td style="text-align: right;">25</td>
-<td style="text-align: right;">609</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">0207</td>
-<td style="text-align: left;">0207271000</td>
-<td style="text-align: left;">Poultry</td>
-<td style="text-align: left;">Meat and edible offal of poultry of the poultry of heading no. 0105, (ie fowls of the species gallus domestic</td>
-<td style="text-align: left;">Backs, necks and wings</td>
-<td style="text-align: left;">United States of America</td>
-<td style="text-align: right;">18797</td>
-<td style="text-align: right;">125999</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">0303</td>
-<td style="text-align: left;">0303892000</td>
-<td style="text-align: left;">Fish</td>
-<td style="text-align: left;">Fish frozen (excluding fish fillets and other fish meat of heading no. 0304)</td>
-<td style="text-align: left;">Snapper, croaker, grouper, dolphinfish (mahimahi) and bangamary</td>
-<td style="text-align: left;">United States of America</td>
-<td style="text-align: right;">1317</td>
-<td style="text-align: right;">82</td>
-</tr>
-<tr class="odd">
 <td style="text-align: left;">0210</td>
-<td style="text-align: left;">0210203000</td>
+<td style="text-align: left;">0210110000</td>
 <td style="text-align: left;">Other meat</td>
 <td style="text-align: left;">Meat and edible meat offal salted, in brine, dried or smoked edible flours and meals of meat or meat offal</td>
-<td style="text-align: left;">Smoked</td>
-<td style="text-align: left;">Guadeloupe</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: right;">360</td>
+<td style="text-align: left;">Hams, shoulders and cuts thereof, with bone in</td>
+<td style="text-align: left;">Sint Maarten (Dutch)</td>
+<td style="text-align: right;">1000</td>
+<td style="text-align: right;">131568</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">0703</td>
+<td style="text-align: left;">0703200000</td>
+<td style="text-align: left;">Garlic</td>
+<td style="text-align: left;">Onions, shallots, garlic, leeks and other alliaceous vegetables fresh or chilled</td>
+<td style="text-align: left;">Garlic</td>
+<td style="text-align: left;">United States of America</td>
+<td style="text-align: right;">2662</td>
+<td style="text-align: right;">28588</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">0203</td>
+<td style="text-align: left;">0203190000</td>
+<td style="text-align: left;">Pigs</td>
+<td style="text-align: left;">Meat of swine fresh, chilled or frozen</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">United States of America</td>
+<td style="text-align: right;">8505</td>
+<td style="text-align: right;">56049</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">0902</td>
+<td style="text-align: left;">0902100000</td>
+<td style="text-align: left;">Tea</td>
+<td style="text-align: left;">Tea</td>
+<td style="text-align: left;">Green tea (not fermented) in immediate packings of a content not exceeding 3 kg</td>
+<td style="text-align: left;">China</td>
+<td style="text-align: right;">26</td>
+<td style="text-align: right;">98</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">0813</td>
+<td style="text-align: left;">0813400000</td>
+<td style="text-align: left;">Fruits</td>
+<td style="text-align: left;">Fruit, dried, other than that of heading no. 0801 to 0806 mixtures of nuts or dried fruits of this chapter</td>
+<td style="text-align: left;">Other fruit</td>
+<td style="text-align: left;">China</td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">13</td>
 </tr>
 </tbody>
 </table>
