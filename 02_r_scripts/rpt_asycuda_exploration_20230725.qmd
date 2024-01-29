@@ -1,0 +1,393 @@
+---
+title: "ASYCUDA Data: Fresh Produce Imports 2022-2023"
+author: "Derrick Theophille"
+date: 2023-07-31
+
+format: 
+  html:
+    toc: true
+    number-sections: true
+    fig_caption: false
+
+execute: 
+  echo: true
+  message: false
+  warning: false
+  
+knitr: 
+  opts_chunk: 
+    comment: false
+    collapse: true
+    
+bibliography: references.bib
+---
+
+```{r}
+#| label: log
+#| echo: false
+
+# 20230714: Created script, added data, produced some visualizations
+# 20230715: Created more visualizations. Converted script from Rmd to Qmd (Quarto)
+# 20230725: Updated script to use the revised raw ASYCUDA data sent on 20230724
+```
+
+# Introduction
+
+# Methodology
+
+## Working environment
+
+Data work was performed in the R environment, using the RStudio IDE. Libraries or packages used are shown below:
+
+```{r}
+#| label: libraries
+
+library(tidyverse) # For plots, reshaping data and summaries. Takes the place of ggplot2, dplyr,  tidyr, stringr, lubridate, readr, and others
+library(readxl) # For MS Excel files
+library(here) # Used for finding files within your project. See more information at https://github.com/jennybc/here_here/blob/master/README.md and https://www.tidyverse.org/articles/2017/12/workflow-vs-script
+library(janitor) # For some data exploration, cleaning and other useful functionality
+library(scales) # For number formats
+library(knitr) # For neat tables
+```
+
+Given that the data contains very large numbers (in the millions), we will force R to not use scientific notation using the code below:
+
+```{r}
+#| label: setup-scientific-notation-in-knit-output
+#| cache: false
+
+
+## numbers >= 10^5 will be denoted in scientific notation,
+## and rounded to 2 digits
+options(scipen = 5, digits = 2)
+```
+
+## Data used
+
+The data used for this exercise was obtained from ASYCUDA databases. It shows commodities imported to Dominica over the period July 2022 to June 2023. The data can be found on my Dropbox here: <https://www.dropbox.com/scl/fi/co4z5zy7yfeh893g0ninp/import-fresh.xls?rlkey=pmqaqmfrwrep1fzbx597wsd3n&dl=0>. 
+
+Here we load the data, clean the variable names, create a new variable made up of the first four characters of the "hs_code" variable, and lastly set certain variables as factors and reorder the variables:
+
+```{r}
+#| label: import-asycuda-data
+#| echo: true
+#| warning: false
+
+# Load asycuda data ----
+asycuda <- read_xls(here("input", "raw data", "ASYCUDA", "import fresh.xls")) %>% 
+  clean_names() %>% 
+  # Rename "tariff_code" to "hs_code" etc.
+  rename(hs_code = tariff_code,
+         origin = orgin) %>% 
+  # Create higher level code for commodities (first 4 digits)
+  mutate(hs_code_categories = str_sub(hs_code, 1, 4)) %>% 
+  # Make columns as factor
+  mutate(across(c(hs_code_categories, hs_code, description, origin), as.factor)) %>% 
+  select(hs_code_categories, everything())
+```
+
+The variables are described this way:
+
+```{r}
+#| label: asycuda-descriptive-table
+#| echo: false
+
+
+d01 <- tibble("Variable name" = names(asycuda),
+              "Description" = c("Categories code for HS Codes", 
+                                "Harmonised System (HS) Codes for commodities",
+                                "Description of the comodity",
+                                "Country of origin of the commodity imported",
+                                "Weight imported in kilograms (kg)",
+                                "Cost Insurance and Freight (CIF) value in Eastern Caribbean Dollars (XCD)"))
+
+kable(d01)
+```
+
+A preview of the data is shown below:
+
+```{r}
+#| label: asycuda-preview
+
+kable(head(asycuda))
+```
+
+In exploring the "asycuda" data, it was observed that the description had over 100 unique values and many with similar names. Additionally, the variable has category and sub-category values within. This causes some of the issue with ambiguity. It was decided to import an HS Code dictionary to address the issue and get higher level categories for use instead of the commodity description.
+
+After a quick search on the internet an MS Excel spreadsheet was found and downloaded. However, the structure was not very useful as multiple lines of data were included within a single row. Cleaning the entire spreadsheet was time consuming, so only the rows containing the codes necessary were cleaned and saved as a CSV file (find this here: <https://www.dropbox.com/scl/fi/mjwl34493bla9t4rhgsjj/hs_codes_list.csv?rlkey=826udzwb2nbsk15cpw27sns1t&dl=0>), using a semi-colon delimiter between variables. The data is loaded here:
+
+```{r}
+#| label: import-hs-codes
+
+# Load HS codes ----
+hs_codes <- read_delim(here("input", "raw data", "ASYCUDA", "hs_codes_list.csv"), 
+                       delim = ";", escape_double = FALSE, trim_ws = TRUE)
+```
+
+Here is a preview of the "hs_codes" data set:
+
+```{r}
+#| label: hs-codes-preview
+
+# slice_sample() gives us a random number of rows from the data set. The number of rows randomly shown is controlled by the "n" value.
+kable(slice_sample(hs_codes, n = 5))
+```
+
+Th "asycuda" data is revised here:
+
+```{r }
+#| label: revised-asycuda-data
+
+# Revised asycuda ----
+asycuda_rev <- asycuda %>% 
+  # Add in HS code categories
+  left_join(hs_codes %>% 
+              # Rename "description" variable in "hs_codes" to "category" 
+              rename(category = description), 
+            # Join the two data sets using common variables 
+            by = c("hs_code_categories" = "hs_category_code")) %>% 
+  # Reclassify commodities 
+  mutate(classification = case_when(
+    hs_code_categories %in% c("0201", "0202") ~ "Cattle",
+    hs_code_categories %in% c("0203") ~ "Pigs",
+    hs_code_categories %in% c("0204") ~ "Sheep or goats",
+    hs_code_categories %in% c("0207") ~ "Poultry",
+    hs_code_categories %in% c("0210", "0208", "0206", "0209") ~ "Other meat",
+    hs_code_categories %in% c("0701") ~ "White potatoes",
+    hs_code_categories %in% c("0703") ~ description,
+    grepl("^03", hs_code_categories) ~ "Fish",
+    grepl("beans|peas", description, ignore.case = TRUE) & !grepl("blend", description) ~ "Peas and beans",
+    grepl("^07", hs_code_categories)  ~ "Vegetables",
+    hs_code_categories %in% c("0801", "0802") ~ "Nuts",
+    hs_code_categories %in% c("0804", "0806", "0807", "0808", 
+                              "0809", "0810", "0811", "0812", "0813", "0814") ~ "Fruits",
+    hs_code_categories == "0901" ~ "Coffee",
+    hs_code_categories == "0902" ~ "Tea",
+    hs_code_categories == "0904" ~ "Peppers (processed)",
+    hs_code_categories %in% c("0905", "0906", "0907", "0908", 
+                              "0909", "0910") ~ "Spices"
+  )) %>% 
+  # Reorder variables
+  select(hs_code_categories, hs_code, classification, category, everything())
+```
+
+```{r}
+#| label: scrap
+#| echo: false
+
+# d01 <- asycuda %>%
+#   group_by(hs_code_categories) %>%
+#   slice(1) %>%
+#   ungroup()
+
+
+# summary(asycuda)
+# unique(asycuda$description)
+```
+
+A preview of the "asycuda_rev" is shown below:
+
+```{r}
+#| label: asycuda-rev-preview
+
+kable(slice_sample(asycuda_rev, n = 5))
+```
+
+# Results
+
+Now that we have fixed our data a bit to make it useful for analysis and reporting, we will proceed with some of that. We will use the weight in kg ("weight_kg") and CIF value ("item_cif") in this report to show the quantities and values imported for the period.
+
+## Imports of fresh produce by origin
+
+```{r}
+#| label: d-origin-cif-wt
+
+# Prep data ----
+d01 <- asycuda_rev %>% 
+  group_by(origin) %>% 
+  summarise(sum_cif = sum(cif_value_ecd, na.rm = TRUE),
+            sum_weight = sum(weight_kg, na.rm = TRUE)) %>% 
+  mutate(cif_percent = sum_cif/sum(sum_cif),
+         weight_percent = sum_weight/sum(sum_weight)) %>% 
+  select(origin, sum_cif, cif_percent, sum_weight, weight_percent)
+```
+
+A total of `r nrow(d01)` origin locations were identified around the world. The table below shows the CIF value (XCD) and share (%) of fresh produce commodities by origin.
+
+```{r}
+#| label: tbl-origin-cif-wt
+
+kable(d01 %>% 
+        mutate(cif_percent = cif_percent*100,
+               weight_percent = weight_percent*100) %>% 
+        adorn_totals(where = "row"),
+      col.names = c("Origin", "CIF value (XCD)", "CIF value share (%)", "Weight (kg)", "Weight share (%)"),
+      format.args = list(big.mark = ','))
+
+```
+
+Perhaps this is better illustrated in the plot below:
+
+```{r}
+#| label: p-origin-cif
+#| fig-width: 8
+#| fig-height: 7
+
+ggplot(d01 %>% 
+         # Reorder the rows by CIF value, from largest to smallest 
+         arrange(sum_cif), 
+       aes(x = reorder(origin, +sum_cif), # Reorder x-axis labels by CIF value
+           y = sum_cif)) +
+  # Plot bars
+  geom_bar(stat = "identity") +
+  # Include text labels outside of bars and round to millions and add "M" at the end
+  geom_text(aes(label = paste(round(sum_cif/ 1e6, 4), "M")),
+            hjust = -0.1) +
+  # Flip the plot 90 degrees for easier reading
+  coord_flip() +
+  # Format plot y-axis scale
+  scale_y_continuous(labels = label_number(suffix = "M", scale = 1e-6),
+                     limits = c(0, 20000000),
+                     breaks = seq(0, 20000000, 2000000)) +
+  # Set theme (I like the black and white)
+  theme_bw() +
+  # Add labels and titles
+  labs(x = "Origin",
+       y = "CIF Value (XCD)",
+       title = "Imports of fresh produce commodities by origin (2022-2023)",
+       subtitle = "Source: ASYCUDA")
+```
+
+### The USA
+
+By a wide margin, the United States of America (USA) is the chief origin of fresh produce imports. The commodities imported from the US are shown below.
+
+```{r}
+#| label: d-usa-commodities-cif-val
+d01 <- asycuda_rev %>% 
+  filter(origin == "United States of America") %>% 
+  group_by(classification) %>% 
+  summarise(sum_cif = sum(cif_value_ecd, na.rm = TRUE),
+            sum_weight = sum(weight_kg, na.rm = TRUE)) %>% 
+  mutate(cif_percent = sum_cif/sum(sum_cif),
+         weight_percent = sum_weight/sum(sum_weight)) %>% 
+  select(classification, sum_cif, cif_percent, sum_weight, weight_percent)
+```
+
+We see that `r max(d01$cif_percent)*100`% of the total value of commodities imported form the USA was `r d01$classification[which(d01$cif_percent == max(d01$cif_percent))]`, with a value of $`r round(d01$sum_cif[which(d01$cif_percent == max(d01$cif_percent))]/1000000,2)` million XCD.
+
+```{r}
+#| label: tbl-usa-cif-val
+
+kable(d01 %>% 
+        mutate(cif_percent = cif_percent*100,
+               weight_percent = weight_percent*100) %>% 
+        adorn_totals(where = "row"),
+      col.names = c("Commodity classification", "CIF value (XCD)", "CIF value share (%)", "Weight (kg)", "Weight share (%)"),
+      format.args = list(big.mark = ','))
+
+```
+
+## Imports of fresh produce by commodity classifications
+
+```{r}
+#| label: d-commodity-cif
+
+# Prep data ----
+d01 <- asycuda_rev %>% 
+  group_by(classification) %>% 
+  summarise(sum_cif = sum(cif_value_ecd, na.rm = TRUE),
+            sum_weight = sum(weight_kg, na.rm = TRUE)) %>% 
+  mutate(cif_percent = sum_cif/sum(sum_cif),
+         weight_percent = sum_weight/sum(sum_weight)) %>% 
+  select(classification, sum_cif, cif_percent, sum_weight, weight_percent)
+```
+
+`r d01$classification[which(d01$cif_percent == max(d01$cif_percent))]` was the most imported commodity based on value ($`r round(d01$sum_cif[which(d01$cif_percent == max(d01$cif_percent))]/1000000, 3)` million XCD) and weight (`r round(d01$sum_weight[which(d01$cif_percent == max(d01$cif_percent))]/1000000, 1)` million kg) for all countries.
+
+```{r}
+#| label: p-commodity-cif
+#| fig-width: 9
+#| fig-height: 7
+
+ggplot(d01 %>% 
+         arrange(sum_cif), 
+       aes(x = reorder(str_wrap(classification, 30), +sum_cif), y = sum_cif)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = paste(round(sum_cif/ 1e6, 4), "M")),
+            hjust = -0.1) +
+  coord_flip() +
+  scale_y_continuous(labels = label_number(suffix = "M", scale = 1e-6),
+                     limits = c(0, 17000000),
+                     breaks = seq(0, 18000000, 2000000)) +
+  theme_bw() +
+  labs(x = "Classification",
+       y = "CIF Value (XCD)",
+       title = "Imports of fresh produce commodities (2022-2023)",
+       subtitle = "Source: ASYCUDA")
+```
+
+### Poultry
+
+Looking at Poultry a bit more deeply, we can examine what sub-classifications of poultry are imported. The poultry commodity with the largest presence in the data is "Other". This indicates that the actual commodity was not specified in our data.
+
+```{r}
+#| label: d-poultry
+
+d01 <- asycuda_rev %>% 
+  filter(classification == "Poultry") %>% 
+  group_by(description) %>% 
+  summarise(sum_cif = sum(cif_value_ecd, na.rm = TRUE),
+            sum_weight = sum(weight_kg, na.rm = TRUE)) %>% 
+  mutate(cif_percent = sum_cif/sum(sum_cif),
+         weight_percent = sum_weight/sum(sum_weight)) %>% 
+  select(description, sum_cif, cif_percent, sum_weight, weight_percent)
+```
+
+```{r}
+#| label: tbl-poultry-cif-val
+
+kable(d01 %>% 
+        mutate(cif_percent = cif_percent*100,
+               weight_percent = weight_percent*100) %>% 
+        adorn_totals(where = "row"),
+      col.names = c("Commodity", "CIF value (XCD)", "CIF value share (%)", "Weight (kg)", "Weight share (%)"),
+      format.args = list(big.mark = ','))
+
+```
+
+### Fish
+
+Fish commodities are shown similarly below:
+
+```{r}
+#| label: d-fish
+
+d01 <- asycuda_rev %>% 
+  filter(classification == "Fish") %>% 
+  # Some cleaning
+  mutate(description = case_when(
+    grepl("^Cod", description, ignore.case = FALSE) ~ "Cod, mackerel and alewives",
+    grepl("Pacific salmon", description, ignore.case = FALSE) ~ "Pacific salmon",
+    TRUE ~ as.character(description)
+  )) %>% 
+  group_by(description) %>% 
+  summarise(sum_cif = sum(cif_value_ecd, na.rm = TRUE),
+            sum_weight = sum(weight_kg, na.rm = TRUE)) %>% 
+  mutate(cif_percent = sum_cif/sum(sum_cif),
+         weight_percent = sum_weight/sum(sum_weight)) %>% 
+  select(description, sum_cif, cif_percent, sum_weight, weight_percent)
+  
+```
+
+```{r}
+#| label: tbl-fish-cif-val
+
+kable(d01 %>% 
+        mutate(cif_percent = cif_percent*100,
+               weight_percent = weight_percent*100) %>% 
+        adorn_totals(where = "row"),
+      col.names = c("Commodity", "CIF value (XCD)", "CIF value share (%)", "Weight (kg)", "Weight share (%)"),
+      format.args = list(big.mark = ','))
+
+```
