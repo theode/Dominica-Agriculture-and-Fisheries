@@ -1,7 +1,8 @@
 ---
 title: "ASYCUDA Data: Fresh Produce Imports 2022-2023"
 author: "Derrick Theophille"
-date: 2024-01-29
+date: last-modified
+date-format: "DD MMMM YYYY"
 
 format: 
   html:
